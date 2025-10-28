@@ -1,3 +1,5 @@
+'use client'
+
 import { Center } from '@chakra-ui/react'
 import { Auth } from '@saas-ui/auth'
 import { Link } from '@saas-ui/react'
