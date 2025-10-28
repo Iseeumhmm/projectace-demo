@@ -1,23 +1,35 @@
 import { graphql } from "@/__generated__";
 import { gqlFetch } from "@/lib/gql";
 import { HomeClient } from '#components/home-client';
+import { getAuthToken } from '@/lib/auth';
 
-/**
- * Server component that fetches media data at build time
- */
 export default async function Page() {
   const MediaQuery = graphql(`
-    query AllMedia {
-      allMedia {
-        docs {
+    query AllPages {
+      Pages {
+        docs { 
           id
-          alt
-          url
-          filename
-          mimeType
-          width
-          height
+          title
+          slug
+          layout {
+            __typename
+            ... on FAQBlock {
+              id
+              blockName
+              blockType
+              title
+              faqs {
+                id
+                question
+                answer
+              }
+            }
+          }
+          authors {
+            __typename
+          }
           createdAt
+          updatedAt
         }
         totalDocs
         hasNextPage
@@ -25,7 +37,8 @@ export default async function Page() {
     }
   `);
 
-  const data = await gqlFetch(MediaQuery, { limit: 20 }, { revalidate: 60, withCredentials: true });
+  const token = await getAuthToken();
+  const data = await gqlFetch(MediaQuery, { limit: 20 }, { revalidate: 60, token });
 
   return <HomeClient mediaData={data} />
 }
