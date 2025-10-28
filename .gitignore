@@ -7,3 +7,4 @@ node_modules
 .next
 .open-next
 .wrangler
+__generated__
