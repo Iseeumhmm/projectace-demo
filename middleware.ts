@@ -17,38 +17,62 @@ export function middleware(request: Request) {
   const h = request.headers
 
   const cfHeaderMap: Record<string, string | null> = {
-    'x-cf-ipcity': h.get('cf-ipcity'),
-    'x-cf-ipcountry': h.get('cf-ipcountry'),
-    'x-cf-ipcontinent': h.get('cf-ipcontinent'),
-    'x-cf-iplongitude': h.get('cf-iplongitude'),
-    'x-cf-iplatitude': h.get('cf-iplatitude'),
-    'x-cf-region': h.get('cf-region'),
-    'x-cf-region-code': h.get('cf-region-code'),
-    'x-cf-metro-code': h.get('cf-metro-code'),
-    'x-cf-postal-code': h.get('cf-postal-code'),
-    'x-cf-timezone': h.get('cf-timezone'),
-    'x-client-ip': h.get('cf-connecting-ip'),
-    'x-client-ips': h.get('x-forwarded-for'),
+    city: h.get('cf-ipcity'),
+    country: h.get('cf-ipcountry'),
+    continent: h.get('cf-ipcontinent'),
+    longitude: h.get('cf-iplongitude'),
+    latitude: h.get('cf-iplatitude'),
+    region: h.get('cf-region'),
+    regionCode: h.get('cf-region-code'),
+    metroCode: h.get('cf-metro-code'),
+    postalCode: h.get('cf-postal-code'),
+    timezone: h.get('cf-timezone'),
+    clientIp: h.get('cf-connecting-ip'),
   }
 
   // --- Merge with CF object fallback if headers missing ---
   const cfFallbackMap: Record<string, any> = {
-    'x-cf-ipcity': cf.city,
-    'x-cf-ipcountry': cf.country,
-    'x-cf-ipcontinent': cf.continent,
-    'x-cf-iplongitude': cf.longitude,
-    'x-cf-iplatitude': cf.latitude,
-    'x-cf-region': cf.region,
-    'x-cf-region-code': cf.regionCode,
-    'x-cf-metro-code': cf.metroCode,
-    'x-cf-postal-code': cf.postalCode,
-    'x-cf-timezone': cf.timezone,
+    city: cf.city,
+    country: cf.country,
+    continent: cf.continent,
+    longitude: cf.longitude,
+    latitude: cf.latitude,
+    region: cf.region,
+    regionCode: cf.regionCode,
+    metroCode: cf.metroCode,
+    postalCode: cf.postalCode,
+    timezone: cf.timezone,
   }
 
-  // Apply headers, using fallback when needed
+  // --- Apply headers (for server components) ---
   for (const key of Object.keys(cfHeaderMap)) {
     const value = cfHeaderMap[key] ?? cfFallbackMap[key]
-    if (value) res.headers.set(key, String(value))
+    if (value) res.headers.set(`x-cf-${key}`, String(value))
+  }
+
+  // --- Also set them as cookies (for client visibility) ---
+  // Avoid sensitive IPs; latitude/longitude optional depending on your use case
+  const cookieOpts = [
+    'Path=/',
+    'SameSite=Lax',
+    'Secure',
+    'Max-Age=300', // 5 minutes
+  ]
+
+  for (const key of Object.keys(cfHeaderMap)) {
+    const value = cfHeaderMap[key] ?? cfFallbackMap[key]
+    if (!value) continue
+
+    // Skip highly sensitive fields if needed
+    if (key === 'clientIp') continue
+
+    const cookieName = `geo_${key}`
+    const cookieVal = encodeURIComponent(String(value))
+
+    res.headers.append(
+      'Set-Cookie',
+      `${cookieName}=${cookieVal}; ${cookieOpts.join('; ')}`,
+    )
   }
 
   return res
