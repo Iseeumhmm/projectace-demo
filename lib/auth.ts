@@ -50,6 +50,11 @@ async function loginAndGetToken(): Promise<string> {
  * Gets auth token - cached per request via React cache()
  */
 export const getAuthToken = cache(async (): Promise<string> => {
+  console.log({
+    env: process.env.NEXT_PUBLIC_PAYLOAD_URL,
+    user: process.env.BACKEND_API_USER,
+    pass: process.env.BACKEND_API_PASS,
+  })
   const cookieStore = await cookies()
   const token = cookieStore.get('payload-token')?.value
 
