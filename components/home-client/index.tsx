@@ -57,6 +57,7 @@ import { Em } from '#components/typography'
 import faq from '#data/faq'
 import pricing from '#data/pricing'
 import testimonials from '#data/testimonials'
+import VideoTracker from '#components/videoTracker'
 
 interface HomeClientProps {
   mediaData: any // Replace with proper type from __generated__
@@ -73,6 +74,11 @@ export const HomeClient: React.FC<HomeClientProps> = ({ mediaData }) => {
   return (
     <Box>
       <HeroSection />
+       <VideoTracker
+        playbackId={'d20c653d1f1b7382f9d41e454ffa5d9e'}
+        poster={`https://customer-enmv7t1q1y5wg1ch.cloudflarestream.com/d20c653d1f1b7382f9d41e454ffa5d9e/thumbnails/thumbnail.jpg`}
+        customerCode="enmv7t1q1y5wg1ch"
+      />
       <HighlightsSection />
       <FeaturesSection />
       <TestimonialsSection />
