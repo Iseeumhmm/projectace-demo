@@ -51,6 +51,7 @@ async function loginAndGetToken(): Promise<string> {
  */
 export const getAuthToken = cache(async (): Promise<string> => {
   console.log({
+    environment: process.env.NODE_ENV,
     env: process.env.NEXT_PUBLIC_PAYLOAD_URL,
     user: process.env.BACKEND_API_USER,
     pass: process.env.BACKEND_API_PASS,
