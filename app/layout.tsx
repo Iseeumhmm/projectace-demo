@@ -1,5 +1,6 @@
 import { ColorModeScript, theme } from '@chakra-ui/react'
 
+import './globals.css'
 import { Provider } from './provider'
 
 export default function Layout(props: { children: React.ReactNode }) {

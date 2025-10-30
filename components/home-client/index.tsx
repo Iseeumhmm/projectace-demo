@@ -54,10 +54,10 @@ import { FallInPlace } from '#components/motion/fall-in-place'
 import { Pricing } from '#components/pricing/pricing'
 import { Testimonial, Testimonials } from '#components/testimonials'
 import { Em } from '#components/typography'
+import VideoTracker from '#components/videoTracker'
 import faq from '#data/faq'
 import pricing from '#data/pricing'
 import testimonials from '#data/testimonials'
-import VideoTracker from '#components/videoTracker'
 
 interface HomeClientProps {
   mediaData: any // Replace with proper type from __generated__
@@ -68,13 +68,14 @@ interface HomeClientProps {
  */
 export const HomeClient: React.FC<HomeClientProps> = ({ mediaData }) => {
   React.useEffect(() => {
-    console.log('Media data:', mediaData);
-  }, [mediaData]);
+    console.log('Media data:', mediaData)
+  }, [mediaData])
 
   return (
     <Box>
       <HeroSection />
-       <VideoTracker
+      <PromoSection />
+      <VideoTracker
         playbackId={'d20c653d1f1b7382f9d41e454ffa5d9e'}
         poster={`https://customer-enmv7t1q1y5wg1ch.cloudflarestream.com/d20c653d1f1b7382f9d41e454ffa5d9e/thumbnails/thumbnail.jpg`}
         customerCode="enmv7t1q1y5wg1ch"
@@ -213,8 +214,200 @@ const HeroSection: React.FC = () => {
   )
 }
 
+const PromoSection: React.FC = () => {
+  return (
+    <Container maxW="container.xl" py="20">
+      <Box
+        position="relative"
+        bg="#311361"
+        borderRadius="2xl"
+        maxW="960px"
+        mx="auto"
+        overflow="hidden"
+      >
+        {/* Checkered Pattern Background */}
+        <Box
+          position="absolute"
+          bottom="0"
+          left="50%"
+          transform="translateX(-50%)"
+          width="640px"
+          height="640px"
+          opacity={0.15}
+          pointerEvents="none"
+          backgroundImage="url(/static/promo/checkered-pattern.svg)"
+          backgroundSize="cover"
+          backgroundPosition="center"
+        />
+
+        {/* Glitters */}
+        <Box
+          position="absolute"
+          left="50%"
+          top="50%"
+          transform="translate(-50%, -40%)"
+          width="480px"
+          height="288px"
+          pointerEvents="none"
+          zIndex={0}
+          backgroundImage="url(/static/promo/glitters.svg)"
+          backgroundSize="cover"
+        />
+
+        <VStack spacing={0} pt={[8, 10, 10]} pb={[16, 20, 24]} px={4}>
+          {/* Logo */}
+          <Box mb={[6, 8, 10]} zIndex={1}>
+            <Image
+              src="/static/promo/logo.svg"
+              alt="Landify"
+              width={192}
+              height={48}
+            />
+          </Box>
+
+          {/* Heading */}
+          <VStack spacing={2} mb={[6, 8, 10]} zIndex={1}>
+            <Text
+              color="white"
+              fontSize={['md', 'lg', 'xl']}
+              fontWeight="500"
+              textTransform="uppercase"
+              textAlign="center"
+              letterSpacing="wide"
+            >
+              Get the full version at
+            </Text>
+            <Heading
+              color="white"
+              fontSize={['3xl', '4xl', '5xl', '6xl']}
+              fontWeight="700"
+              textAlign="center"
+              textShadow="4px 4px 4px rgba(0, 0, 0, 0.3)"
+            >
+              15% off!
+            </Heading>
+          </VStack>
+
+          {/* Discount Code Box */}
+          <Box
+            bg="#4C1D95"
+            border="2px dashed #7C3AED"
+            borderRadius="xl"
+            px={[6, 8, 10]}
+            py={[4, 5, 6]}
+            boxShadow="0px 8px 40px 0px rgba(0, 0, 0, 0.25)"
+            mb={[6, 8, 10]}
+            zIndex={1}
+          >
+            <Text
+              color="white"
+              fontSize={['xl', '2xl', '3xl', '4xl']}
+              fontWeight="600"
+              letterSpacing="0.08em"
+              textAlign="center"
+            >
+              FIGMACOMMUNITY
+            </Text>
+          </Box>
+
+          {/* Description */}
+          <Text
+            color="white"
+            fontSize={['sm', 'md', 'lg']}
+            textAlign="center"
+            maxW="428px"
+            mb={[8, 10, 12]}
+            lineHeight="1.5"
+            zIndex={1}
+          >
+            Upgrade to the PRO version of Landify UI kit with the above
+            discount code.
+          </Text>
+
+          {/* Claim Now Button */}
+          <Box
+            as="a"
+            href="#"
+            position="relative"
+            display="inline-block"
+            cursor="pointer"
+            zIndex={1}
+            transition="transform 0.2s"
+            _hover={{
+              transform: 'translateY(-2px)',
+            }}
+          >
+            <Box
+              position="relative"
+              width={['400px', '470px', '564px']}
+              height={['80px', '100px', '120px']}
+            >
+              {/* Button Background SVG */}
+              <Box
+                position="absolute"
+                top="0"
+                left="0"
+                width="100%"
+                height="100%"
+                backgroundImage="url(/static/promo/button-bg.svg)"
+                backgroundSize="contain"
+                backgroundRepeat="no-repeat"
+                backgroundPosition="center"
+              />
+
+              {/* Button Bottom Decoration */}
+              <Box
+                position="absolute"
+                bottom="0"
+                left="50%"
+                transform="translateX(-50%)"
+                width="93%"
+                height="20%"
+                backgroundImage="url(/static/promo/button-bottom.svg)"
+                backgroundSize="contain"
+                backgroundRepeat="no-repeat"
+                backgroundPosition="center"
+              />
+
+              {/* Button Label */}
+              <Flex
+                position="absolute"
+                top="0"
+                left="0"
+                width="100%"
+                height="83%"
+                alignItems="center"
+                justifyContent="center"
+                gap={3}
+              >
+                <Text
+                  color="black"
+                  fontSize={['xl', '2xl', '28px']}
+                  fontWeight="600"
+                  lineHeight="1.3"
+                >
+                  Claim now
+                </Text>
+                <Box
+                  width={['20px', '22px', '24px']}
+                  height={['13px', '14px', '16px']}
+                  backgroundImage="url(/static/promo/arrow-icon.svg)"
+                  backgroundSize="contain"
+                  backgroundRepeat="no-repeat"
+                  backgroundPosition="center"
+                  mt={1}
+                />
+              </Flex>
+            </Box>
+          </Box>
+        </VStack>
+      </Box>
+    </Container>
+  )
+}
+
 const HighlightsSection = () => {
-  const { value, onCopy, hasCopied } = useClipboard('yarn add @saas-ui/react')
+  const { onCopy, hasCopied } = useClipboard('yarn add @saas-ui/react')
 
   return (
     <Highlights>
