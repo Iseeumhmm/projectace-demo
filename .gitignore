@@ -7,3 +7,5 @@ node_modules
 .open-next
 .wrangler
 __generated__
+
+.DS_Store

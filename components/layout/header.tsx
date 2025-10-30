@@ -41,6 +41,7 @@ export const Header = (props: HeaderProps) => {
       bg={y > height ? bg : ''}
       boxShadow={y > height ? 'md' : ''}
       borderBottomWidth={y > height ? '1px' : ''}
+      height="110px"
       {...props}
     >
       <Container maxW="container.2xl" px="8" py="4">
