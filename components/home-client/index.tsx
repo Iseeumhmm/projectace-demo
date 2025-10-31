@@ -57,6 +57,12 @@ type FaqData = {
   items: { q: React.ReactNode; a: React.ReactNode }[]
 }
 
+type DynamicSection =
+  | { kind: 'video'; playbackId: string }
+  | { kind: 'pricing'; data: Omit<PricingProps, 'children'> }
+  | { kind: 'faq'; data: FaqData }
+  | { kind: 'content'; nodes: any[] }
+
 interface HomeClientProps {
   videoPlaybackId?: string
   pricing?: Omit<PricingProps, 'children'>
@@ -65,6 +71,10 @@ interface HomeClientProps {
    * Lexical rich text root children from the CMS ContentBlock
    */
   contentNodes?: any[]
+  /**
+   * Ordered dynamic sections from CMS layout
+   */
+  blocks?: DynamicSection[]
 }
 
 /**
@@ -75,23 +85,62 @@ export const HomeClient: React.FC<HomeClientProps> = ({
   pricing: pricingOverride,
   faq: faqOverride,
   contentNodes,
+  blocks,
 }) => {
   return (
     <Box>
       <HeroSection />
       {/* <PromoSection /> */}
-      <PricingSection data={pricingOverride} />
-      <VideoTracker
-        playbackId={videoPlaybackId ?? 'd20c653d1f1b7382f9d41e454ffa5d9e'}
-        poster={
-          videoPlaybackId
-            ? undefined
-            : `https://customer-enmv7t1q1y5wg1ch.cloudflarestream.com/d20c653d1f1b7382f9d41e454ffa5d9e/thumbnails/thumbnail.jpg`
-        }
-        customerCode={videoPlaybackId ? undefined : 'enmv7t1q1y5wg1ch'}
-      />
-      <FaqSection data={faqOverride} />
-      {contentNodes?.length ? <ContentSection nodes={contentNodes} /> : null}
+      {Array.isArray(blocks) && blocks.length > 0 ? (
+        <>
+          {blocks.map((section, index) => {
+            switch (section.kind) {
+              case 'video':
+                return (
+                  <VideoTracker
+                    key={`video-${index}`}
+                    playbackId={section.playbackId}
+                  />
+                )
+              case 'pricing':
+                return (
+                  <PricingSection
+                    key={`pricing-${index}`}
+                    data={section.data}
+                  />
+                )
+              case 'faq':
+                return <FaqSection key={`faq-${index}`} data={section.data} />
+              case 'content':
+                return (
+                  <ContentSection
+                    key={`content-${index}`}
+                    nodes={section.nodes}
+                  />
+                )
+              default:
+                return null
+            }
+          })}
+        </>
+      ) : (
+        <>
+          <PricingSection data={pricingOverride} />
+          <VideoTracker
+            playbackId={videoPlaybackId ?? 'd20c653d1f1b7382f9d41e454ffa5d9e'}
+            poster={
+              videoPlaybackId
+                ? undefined
+                : `https://customer-enmv7t1q1y5wg1ch.cloudflarestream.com/d20c653d1f1b7382f9d41e454ffa5d9e/thumbnails/thumbnail.jpg`
+            }
+            customerCode={videoPlaybackId ? undefined : 'enmv7t1q1y5wg1ch'}
+          />
+          <FaqSection data={faqOverride} />
+          {contentNodes?.length ? (
+            <ContentSection nodes={contentNodes} />
+          ) : null}
+        </>
+      )}
       <HighlightsSection />
       <FeaturesSection />
       <TestimonialsSection />

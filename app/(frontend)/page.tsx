@@ -147,12 +147,69 @@ export default async function Page() {
   const contentBlock: any | undefined = layout.find((b: any) => b?.richText)
   const contentNodes: any[] = contentBlock?.richText?.root?.children ?? []
 
-  return (
-    <HomeClient
-      videoPlaybackId={videoPlaybackId}
-      pricing={pricing}
-      faq={faq}
-      contentNodes={contentNodes}
-    />
-  )
+  // Build ordered dynamic blocks based on layout order
+  const blocks: Array<
+    | { kind: 'video'; playbackId: string }
+    | { kind: 'pricing'; data: any }
+    | { kind: 'faq'; data: any }
+    | { kind: 'content'; nodes: any[] }
+  > = []
+
+  for (const b of layout as any[]) {
+    const streamId = b?.CloudflareStreamVideo?.streamVideoId
+    if (typeof streamId === 'string' && streamId.length > 0) {
+      blocks.push({ kind: 'video', playbackId: streamId })
+      continue
+    }
+
+    if (Array.isArray(b?.cards)) {
+      const pricingFromCta = {
+        title: b?.title ?? 'Top picks',
+        description:
+          b?.description ?? 'Curated recommendations powered by CMS content.',
+        plans: (b.cards as any[]).map((card: any, idx: number) => {
+          const slug = String(card?.title || `plan-${idx}`)
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)+/g, '')
+
+          return {
+            id: `${idx}-${slug}`,
+            title: card?.title ?? '',
+            description: card?.description ?? '',
+            price: '',
+            features: Array.isArray(card?.features)
+              ? card.features.map((f: any) => ({ title: f?.feature }))
+              : [],
+            action: { href: '#', label: card?.buttonText || 'Learn more' },
+            isRecommended: Boolean(card?.featured),
+          }
+        }),
+      }
+      blocks.push({ kind: 'pricing', data: pricingFromCta })
+      continue
+    }
+
+    if (Array.isArray(b?.faqs)) {
+      const faqFromBlock = {
+        title: b?.title ?? 'Frequently asked questions',
+        items: (b.faqs as any[]).map((f: any) => ({
+          q: f?.question ?? '',
+          a: flattenLexicalToText(f?.answer) ?? '',
+        })),
+      }
+      blocks.push({ kind: 'faq', data: faqFromBlock })
+      continue
+    }
+
+    if (b?.richText) {
+      blocks.push({
+        kind: 'content',
+        nodes: b?.richText?.root?.children ?? [],
+      })
+      continue
+    }
+  }
+
+  return <HomeClient blocks={blocks} />
 }
