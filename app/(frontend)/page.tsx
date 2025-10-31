@@ -1,18 +1,24 @@
-import { graphql } from "@/__generated__";
-import { gqlFetch } from "@/lib/gql";
-import { HomeClient } from '#components/home-client';
-import { getAuthToken } from '@/lib/auth';
+import { graphql } from '@/__generated__'
+import { getAuthToken } from '@/lib/auth'
+import { gqlFetch } from '@/lib/gql'
+
+import { HomeClient } from '#components/home-client'
 
 export default async function Page() {
   const MediaQuery = graphql(`
-    query AllPages {
-      Pages {
-        docs { 
+    query HomePage {
+      Pages(where: { title: { equals: "Home Page" } }) {
+        docs {
           id
           title
           slug
           layout {
-            __typename
+            ... on VideoBlock {
+              CloudflareStreamVideo {
+                title
+                streamVideoId
+              }
+            }
             ... on FAQBlock {
               id
               blockName
@@ -24,9 +30,35 @@ export default async function Page() {
                 answer
               }
             }
+
+            ... on Cta {
+              title
+              description
+              cards {
+                title
+                description
+                features {
+                  feature
+                }
+                featured
+                buttonText
+                featured
+              }
+            }
+            ... on ContentBlock {
+              richText
+            }
           }
           authors {
-            __typename
+            ... on Author {
+              displayName
+              authorTitle
+              profilePicture {
+                width
+                height
+                url
+              }
+            }
           }
           createdAt
           updatedAt
@@ -35,10 +67,92 @@ export default async function Page() {
         hasNextPage
       }
     }
-  `);
+  `)
 
-  const token = await getAuthToken();
-  const data = await gqlFetch(MediaQuery, { limit: 20 }, { revalidate: 60, token });
+  const token = await getAuthToken()
+  const data = await gqlFetch(
+    MediaQuery,
+    { limit: 20 },
+    { revalidate: 60, token },
+  )
 
-  return <HomeClient mediaData={data} />
+  // Helpers to extract content from blocks
+  const page = (data as any)?.Pages?.docs?.[0]
+  const layout = page?.layout ?? []
+
+  // Video: pick first VideoBlock
+  const videoPlaybackId: string | undefined = layout
+    .map((b: any) => b?.CloudflareStreamVideo?.streamVideoId)
+    .find(Boolean)
+
+  // CTA -> Pricing plans mapping
+  const ctaBlock: any | undefined = layout.find((b: any) =>
+    Array.isArray(b?.cards),
+  )
+
+  const pricing = ctaBlock
+    ? {
+        title: ctaBlock?.title ?? 'Top picks',
+        description:
+          ctaBlock?.description ??
+          'Curated recommendations powered by CMS content.',
+        plans: (ctaBlock.cards as any[]).map((card: any, idx: number) => {
+          const slug = String(card?.title || `plan-${idx}`)
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)+/g, '')
+
+          return {
+            id: `${idx}-${slug}`,
+            title: card?.title ?? '',
+            description: card?.description ?? '',
+            price: '',
+            features: Array.isArray(card?.features)
+              ? card.features.map((f: any) => ({ title: f?.feature }))
+              : [],
+            action: { href: '#', label: card?.buttonText || 'Learn more' },
+            isRecommended: Boolean(card?.featured),
+          }
+        }),
+      }
+    : undefined
+
+  // FAQ mapping (flatten Lexical rich text -> plain text)
+  const flattenLexicalToText = (node: any): string => {
+    if (!node) return ''
+    if (typeof node === 'string') return node
+    const children: any[] = node?.children || node?.root?.children || []
+    let out = ''
+    for (const child of children) {
+      if (child?.text) out += child.text
+      if (child?.children?.length) out += flattenLexicalToText(child)
+    }
+    return out
+  }
+
+  const faqBlock: any | undefined = layout.find((b: any) =>
+    Array.isArray(b?.faqs),
+  )
+  const faq = faqBlock
+    ? {
+        title: faqBlock?.title ?? 'Frequently asked questions',
+        items: (faqBlock.faqs as any[]).map((f: any) => ({
+          q: f?.question ?? '',
+          a: flattenLexicalToText(f?.answer) ?? '',
+        })),
+      }
+    : undefined
+
+  // Content block (richText) mapping
+  const contentBlock: any | undefined = layout.find((b: any) => b?.richText)
+  const contentNodes: any[] = contentBlock?.richText?.root?.children ?? []
+
+  return (
+    <HomeClient
+      videoPlaybackId={videoPlaybackId}
+      pricing={pricing}
+      faq={faq}
+      contentNodes={contentNodes}
+    />
+  )
 }

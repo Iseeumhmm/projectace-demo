@@ -7,7 +7,12 @@ export default function Layout(props: { children: React.ReactNode }) {
   const colorMode = theme.config.initialColorMode
 
   return (
-    <html lang="en" data-theme={colorMode} style={{ colorScheme: colorMode }}>
+    <html
+      lang="en"
+      data-theme={colorMode}
+      style={{ colorScheme: colorMode }}
+      suppressHydrationWarning
+    >
       <head>
         <link
           rel="apple-touch-icon"
@@ -28,7 +33,7 @@ export default function Layout(props: { children: React.ReactNode }) {
         />
         <link rel="manifest" href="/static/favicons/manifest.json" />
       </head>
-      <body className={`chakra-ui-${colorMode}`}>
+      <body className={`chakra-ui-${colorMode}`} suppressHydrationWarning>
         <ColorModeScript initialColorMode={colorMode} />
         <Provider>{props.children}</Provider>
       </body>

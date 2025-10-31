@@ -7,8 +7,6 @@ import {
   Flex,
   HStack,
   Heading,
-  Icon,
-  IconButton,
   Stack,
   Tag,
   Text,
@@ -19,19 +17,12 @@ import {
 import { Br, Link } from '@saas-ui/react'
 import Image from 'next/image'
 import {
-  FiArrowRight,
   FiBox,
-  FiCheck,
   FiCode,
-  FiCopy,
   FiFlag,
-  FiGrid,
   FiLock,
   FiSearch,
-  FiSliders,
-  FiSmile,
   FiTerminal,
-  FiThumbsUp,
   FiToggleLeft,
   FiTrendingUp,
   FiUserPlus,
@@ -49,42 +40,61 @@ import {
   HighlightsItem,
   HighlightsTestimonialItem,
 } from '#components/highlights'
-import { ChakraLogo, NextjsLogo } from '#components/logos'
+import { NextjsLogo } from '#components/logos'
+import { CloudflareLogo } from '#components/logos/cloudflare'
+import { PayloadLogo } from '#components/logos/payload'
 import { FallInPlace } from '#components/motion/fall-in-place'
-import { Pricing } from '#components/pricing/pricing'
+import { Pricing, type PricingProps } from '#components/pricing/pricing'
 import { Testimonial, Testimonials } from '#components/testimonials'
-import { Em } from '#components/typography'
 import VideoTracker from '#components/videoTracker'
 import faq from '#data/faq'
 import pricing from '#data/pricing'
 import testimonials from '#data/testimonials'
 
+type FaqData = {
+  title?: React.ReactNode
+  description?: React.ReactNode
+  items: { q: React.ReactNode; a: React.ReactNode }[]
+}
+
 interface HomeClientProps {
-  mediaData: any // Replace with proper type from __generated__
+  videoPlaybackId?: string
+  pricing?: Omit<PricingProps, 'children'>
+  faq?: FaqData
+  /**
+   * Lexical rich text root children from the CMS ContentBlock
+   */
+  contentNodes?: any[]
 }
 
 /**
  * Client component with all the interactive UI
  */
-export const HomeClient: React.FC<HomeClientProps> = ({ mediaData }) => {
-  React.useEffect(() => {
-    console.log('Media data:', mediaData)
-  }, [mediaData])
-
+export const HomeClient: React.FC<HomeClientProps> = ({
+  videoPlaybackId,
+  pricing: pricingOverride,
+  faq: faqOverride,
+  contentNodes,
+}) => {
   return (
     <Box>
       <HeroSection />
-      <PromoSection />
+      {/* <PromoSection /> */}
+      <PricingSection data={pricingOverride} />
       <VideoTracker
-        playbackId={'d20c653d1f1b7382f9d41e454ffa5d9e'}
-        poster={`https://customer-enmv7t1q1y5wg1ch.cloudflarestream.com/d20c653d1f1b7382f9d41e454ffa5d9e/thumbnails/thumbnail.jpg`}
-        customerCode="enmv7t1q1y5wg1ch"
+        playbackId={videoPlaybackId ?? 'd20c653d1f1b7382f9d41e454ffa5d9e'}
+        poster={
+          videoPlaybackId
+            ? undefined
+            : `https://customer-enmv7t1q1y5wg1ch.cloudflarestream.com/d20c653d1f1b7382f9d41e454ffa5d9e/thumbnails/thumbnail.jpg`
+        }
+        customerCode={videoPlaybackId ? undefined : 'enmv7t1q1y5wg1ch'}
       />
+      <FaqSection data={faqOverride} />
+      {contentNodes?.length ? <ContentSection nodes={contentNodes} /> : null}
       <HighlightsSection />
       <FeaturesSection />
       <TestimonialsSection />
-      <PricingSection />
-      <FaqSection />
     </Box>
   )
 }
@@ -99,47 +109,18 @@ const HeroSection: React.FC = () => {
             id="home"
             justifyContent="flex-start"
             px="0"
-            title={
-              <FallInPlace>
-                Build beautiful
-                <Br /> software faster
-              </FallInPlace>
-            }
-            description={
-              <FallInPlace delay={0.4} fontWeight="medium">
-                Saas UI is a <Em>React component library</Em>
-                <Br /> that doesn&apos;t get in your way and helps you <Br />{' '}
-                build intuitive SaaS products with speed.
-              </FallInPlace>
-            }
+            title={<FallInPlace>The Next Big Thing</FallInPlace>}
           >
             <FallInPlace delay={0.8}>
               <HStack pt="4" pb="12" spacing="8">
-                <NextjsLogo height="28px" /> <ChakraLogo height="20px" />
+                <CloudflareLogo />
+                <PayloadLogo />
+                <NextjsLogo height="28px" />
               </HStack>
 
               <ButtonGroup spacing={4} alignItems="center">
                 <ButtonLink colorScheme="primary" size="lg" href="/signup">
                   Sign Up
-                </ButtonLink>
-                <ButtonLink
-                  size="lg"
-                  href="https://demo.saas-ui.dev"
-                  variant="outline"
-                  rightIcon={
-                    <Icon
-                      as={FiArrowRight}
-                      sx={{
-                        transitionProperty: 'common',
-                        transitionDuration: 'normal',
-                        '.chakra-button:hover &': {
-                          transform: 'translate(5px)',
-                        },
-                      }}
-                    />
-                  }
-                >
-                  View demo
                 </ButtonLink>
               </ButtonGroup>
             </FallInPlace>
@@ -154,7 +135,11 @@ const HeroSection: React.FC = () => {
             margin="0 auto"
           >
             <FallInPlace delay={1}>
-              <Box overflow="hidden" height="100%">
+              <Box
+                overflow="hidden"
+                height="100%"
+                style={{ borderRadius: '1rem', border: '1px solid #8952e0' }}
+              >
                 <Image
                   src="/static/screenshots/hero.png"
                   width={1200}
@@ -169,48 +154,6 @@ const HeroSection: React.FC = () => {
           </Box>
         </Stack>
       </Container>
-
-      <Features
-        id="benefits"
-        columns={[1, 2, 4]}
-        iconSize={4}
-        innerWidth="container.xl"
-        pt="20"
-        features={[
-          {
-            title: 'Accessible',
-            icon: FiSmile,
-            description: 'All components strictly follow WAI-ARIA standards.',
-            iconPosition: 'left',
-            delay: 0.6,
-          },
-          {
-            title: 'Themable',
-            icon: FiSliders,
-            description:
-              'Fully customize all components to your brand with theme support and style props.',
-            iconPosition: 'left',
-            delay: 0.8,
-          },
-          {
-            title: 'Composable',
-            icon: FiGrid,
-            description:
-              'Compose components to fit your needs and mix them together to create new ones.',
-            iconPosition: 'left',
-            delay: 1,
-          },
-          {
-            title: 'Productive',
-            icon: FiThumbsUp,
-            description:
-              'Designed to reduce boilerplate and fully typed, build your product at speed.',
-            iconPosition: 'left',
-            delay: 1.1,
-          },
-        ]}
-        reveal={FallInPlace}
-      />
     </Box>
   )
 }
@@ -412,58 +355,12 @@ const HighlightsSection = () => {
 
   return (
     <Highlights>
-      <HighlightsItem colSpan={[1, null, 2]} title="Core components">
-        <VStack alignItems="flex-start" spacing="8">
-          <Text color="muted" fontSize="xl">
-            Get started for free with <Em>30+ open source components</Em>.
-            Including authentication screens with Clerk, Supabase and Magic.
-            Fully functional forms with React Hook Form. Data tables with React
-            Table.
-          </Text>
-
-          <Flex
-            rounded="full"
-            borderWidth="1px"
-            flexDirection="row"
-            alignItems="center"
-            py="1"
-            ps="8"
-            pe="2"
-            bg="primary.900"
-            _dark={{ bg: 'gray.900' }}
-          >
-            <Box>
-              <Text color="yellow.400" display="inline">
-                yarn add
-              </Text>{' '}
-              <Text color="cyan.300" display="inline">
-                @saas-ui/react
-              </Text>
-            </Box>
-            <IconButton
-              icon={hasCopied ? <FiCheck /> : <FiCopy />}
-              aria-label="Copy install command"
-              onClick={onCopy}
-              variant="ghost"
-              ms="4"
-              isRound
-              color="white"
-            />
-          </Flex>
-        </VStack>
-      </HighlightsItem>
-      <HighlightsItem title="Solid foundations">
-        <Text color="muted" fontSize="lg">
-          We don&apos;t like to re-invent the wheel, neither should you. We
-          selected the most productive and established tools in the scene and
-          build Saas UI on top of it.
-        </Text>
-      </HighlightsItem>
       <HighlightsTestimonialItem
         name="Renata Alink"
         description="Founder"
         avatar="/static/images/avatar.jpg"
-        gradient={['pink.200', 'purple.500']}
+        bg="purple.900"
+        gradient={['pink.900', 'purple.900']}
       >
         "Saas UI helped us set up a beautiful modern UI in no time. It saved us
         hundreds of hours in development time and allowed us to focus on
@@ -644,9 +541,11 @@ const TestimonialsSection = () => {
   )
 }
 
-const PricingSection = () => {
+const PricingSection: React.FC<{ data?: Omit<PricingProps, 'children'> }> = ({
+  data,
+}) => {
   return (
-    <Pricing {...pricing}>
+    <Pricing {...(data ?? pricing)}>
       <Text p="8" textAlign="center" color="muted">
         VAT may be applicable depending on your location.
       </Text>
@@ -654,6 +553,49 @@ const PricingSection = () => {
   )
 }
 
-const FaqSection = () => {
-  return <Faq {...faq} />
+const FaqSection: React.FC<{ data?: FaqData }> = ({ data }) => {
+  return <Faq {...(data ?? faq)} />
+}
+
+/**
+ * Render a simple subset of Lexical nodes coming from the CMS
+ */
+function ContentSection({ nodes }: { nodes: any[] }) {
+  const renderInline = (children: any[]) =>
+    (children || []).map((c, i) =>
+      c?.type === 'linebreak' ? (
+        <Br key={`br-${i}`} />
+      ) : (
+        <React.Fragment key={`t-${i}`}>{c?.text ?? ''}</React.Fragment>
+      ),
+    )
+
+  return (
+    <Container maxW="container.lg" py={{ base: 8, md: 12 }}>
+      <Stack spacing={4} px={{ base: 4, md: 0 }}>
+        {nodes.map((n: any, i: number) => {
+          if (n?.type === 'heading') {
+            const tag = (n?.tag as any) || 'h2'
+            const align = (n?.format as any) || 'left'
+            // Lexical heading stores paragraph children inside the first child
+            const inlineChildren = n?.children?.[0]?.children || []
+            return (
+              <Heading key={i} as={tag as any} textAlign={align as any}>
+                {renderInline(inlineChildren)}
+              </Heading>
+            )
+          }
+          if (n?.type === 'paragraph') {
+            const align = (n?.format as any) || 'left'
+            return (
+              <Text key={i} textAlign={align as any}>
+                {renderInline(n?.children || [])}
+              </Text>
+            )
+          }
+          return null
+        })}
+      </Stack>
+    </Container>
+  )
 }

@@ -5,16 +5,21 @@ export async function gqlFetch<TData, TVars>(
   query: string | DocumentNode,
   variables?: TVars,
   opts?: { revalidate?: number | false; token?: string },
-): Promise<TData> {
+): Promise<TData | null> {
   const queryString = typeof query === 'string' ? query : print(query)
 
   const res = await fetchGraphQL(queryString, variables, opts?.token, opts)
 
-  if (!res.ok) throw new Error(`GraphQL HTTP ${res.status}`)
-  const json = await res.json()
-  if (json.errors?.length)
-    throw new Error(json.errors.map((e: any) => e.message).join('; '))
-  return json.data as TData
+  try {
+    if (!res.ok) throw new Error(`GraphQL HTTP ${res.status}`)
+    const json = await res.json()
+    if (json.errors?.length)
+      throw new Error(json.errors.map((e: any) => e.message).join('; '))
+    return json.data as TData
+  } catch (error) {
+    console.error('GraphQL Error:', error)
+    return null
+  }
 }
 
 async function fetchGraphQL(
